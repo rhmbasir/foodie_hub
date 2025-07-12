@@ -1,0 +1,8 @@
+<%- include('partials/header') %>
+<h2>Top Selling Items</h2>
+<ul>
+  <% items.forEach(i => { %>
+    <li><%= i.name %>: <%= i.total_sold %> sold</li>
+  <% }) %>
+</ul>
+<%- include('partials/footer') %>

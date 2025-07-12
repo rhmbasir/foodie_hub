@@ -1,0 +1,13 @@
+<%- include('partials/header') %>
+
+<h2>Edit Restaurant</h2>
+<form method="POST" action="/restaurants/<%= restaurant.id %>">
+  <input type="text" name="name" value="<%= restaurant.name %>" required>
+  <input type="text" name="address" value="<%= restaurant.address %>" required>
+  <input type="text" name="phone" value="<%= restaurant.phone %>" required>
+  <button type="submit">Update</button>
+</form>
+
+<p><a href="/restaurants">Back to list</a></p>
+
+<%- include('partials/footer') %>

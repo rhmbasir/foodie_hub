@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<form method="GET" action="/restaurants">
+  <input type="text" name="search" placeholder="Search restaurants" value="<%= search %>">
+  <button type="submit">Search</button>
+</form>
+
+<h2>Add New Restaurant</h2>
+<form method="POST" action="/restaurants">
+  <input type="text" name="name" placeholder="Name" required>
+  <input type="text" name="address" placeholder="Address" required>
+  <input type="text" name="phone" placeholder="Phone" required>
+  <button type="submit">Add</button>
+</form>
+
+<h2>All Restaurants</h2>
+<ul>
+  <% restaurants.forEach(r => { %>
+    <li>
+      <strong><%= r.name %></strong> - <%= r.address %> - <%= r.phone %>
+      [<a href="/restaurants/<%= r.id %>/edit">Edit</a>]
+      <form style="display:inline" method="POST" action="/restaurants/<%= r.id %>/delete">
+        <button type="submit">Delete</button>
+      </form>
+       <a href="/restaurants/<%= r.id %>/menu">Menu</a>
+    </li>
+  <% }) %>
+</ul>
+
+<%- include('partials/footer') %>

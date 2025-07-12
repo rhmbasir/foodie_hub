@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Menu for <%= restaurant.name %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Menu for <%= restaurant.name %></h1>
+  <p><a href="/restaurants/<%= restaurant.id %>/menu/new">Add Menu Item</a></p>
+  <p><a href="/restaurants">Back to Restaurants</a></p>
+
+  <% menuItems.forEach(item => { %>
+    <div class="card">
+      <h3><%= item.name %> - $<%= item.price %></h3>
+      <p>Available: <%= (item.avalability === true || item.avalability === 't') ? 'Yes' : 'No' %></p>
+      <form action="/menu/<%= item.id %>/toggle" method="POST" style="display:inline;">
+        <button type="submit">Toggle Availability</button>
+      </form>
+      <a href="/menu/<%= item.id %>/edit">Edit</a>
+      <form action="/menu/<%= item.id %>/delete" method="POST" style="display:inline;">
+        <button type="submit" onclick="return confirm('Delete this item?')">Delete</button>
+      </form>
+    </div>
+  <% }) %>
+</body>
+</html>
