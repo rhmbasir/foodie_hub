@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Add Menu Item</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
+<%- include('partials/header') %>
   <h1>Add Menu Item</h1>
   <form method="POST" action="/restaurants/<%= restaurantId %>/menu">
     <input type="text" name="name" placeholder="Item Name" required><br>
@@ -13,5 +7,4 @@
     <button type="submit">Add Item</button>
   </form>
   <p><a href="/restaurants/<%= restaurantId %>/menu">Back to Menu</a></p>
-</body>
-</html>
+<%- include('partials/footer') %>

@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+
+<h1>Edit Customer</h1>
+<form action="/customers/<%= customer.id %>" method="POST">
+  <input type="text" name="name" value="<%= customer.name %>" required><br>
+  <input type="text" name="phone" value="<%= customer.phone %>" required><br>
+  <input type="email" name="email" value="<%= customer.email %>" required><br>
+  <button type="submit">Update</button>
+</form>
+
+<%- include('partials/footer') %>
+

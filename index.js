@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -28,6 +27,8 @@ app.set('view engine', 'ejs');
 app.get('/', (req, res) => {
     res.render('index');
 });
+
+//checking database is connected
 pool.query('select NOW()',(err,res)=>{
     if(err){
         console.error('Database connection error',err.stack);
@@ -44,9 +45,7 @@ app.get('/restaurants', async (req, res) => {
     let result;
     if (search) {
       result = await pool.query(
-        "SELECT * FROM restaurant WHERE name ILIKE $1 OR address ILIKE $1",
-        [`%${search}%`]
-      );
+        "SELECT * FROM restaurant WHERE name ILIKE $1 OR address ILIKE $1", [`%${search}%`]);
     } else {
       result = await pool.query("SELECT * FROM restaurant ORDER BY id");
     }
@@ -267,12 +266,13 @@ app.post('/customers', async (req, res) => {
 app.get('/customers/:id/edit', async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM customer WHERE id = $1", [req.params.id]);
-    res.render('edit_customer', { customer: result.rows[0] });
+    res.render('edit_customer', { customer: result.rows[0] }); 
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
   }
 });
+
 
 // Handle update customer
 app.post('/customers/:id', async (req, res) => {
@@ -298,6 +298,85 @@ app.post('/customers/:id/delete', async (req, res) => {
     console.error(err);
     res.status(500).send('Server error');
   }
+});
+
+
+// Show all orders
+app.get('/orders', async (req, res) => {
+  try {
+    const result = await pool.query(
+     ` SELECT o.*, c.name as customer_name, r.name as restaurant_name
+      FROM orders o
+      JOIN customer c ON o.customer_id = c.id
+      JOIN restaurant r ON o.restaurant_id = r.id
+      ORDER BY o.id ASC`
+    );
+    res.render('orders', { orders: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// New order form
+app.get('/orders/new', async (req, res) => {
+  const customers = await pool.query('SELECT * FROM customer');
+  const restaurants = await pool.query('SELECT * FROM restaurant');
+  const menuItems = await pool.query('SELECT * FROM menu WHERE availability = true');
+  res.render('new_order', {
+    customers: customers.rows,
+    restaurants: restaurants.rows,
+    menuItems: menuItems.rows
+  });
+});
+
+// Place order
+app.post('/orders', async (req, res) => {
+  const { customer_id, restaurant_id } = req.body;
+  const menu_ids = Array.isArray(req.body.menu_ids) ? req.body.menu_ids : [req.body.menu_ids];
+  
+  const order = await pool.query(
+    'INSERT INTO orders (customer_id, restaurant_id, status) VALUES ($1, $2, $3) RETURNING *',
+    [customer_id, restaurant_id, 'pending']
+  );
+
+  for (let menu_id of menu_ids) {
+    const quantity = parseInt(req.body[`quantity_${menu_id}`]) || 1;
+    await pool.query(
+      'INSERT INTO orderitem (order_id, menu_id, quantity) VALUES ($1, $2, $3)',
+      [order.rows[0].id, menu_id, quantity]
+    );
+  }
+
+  res.redirect('/orders');
+});
+
+// Update order status
+app.post('/orders/:id/status', async (req, res) => {
+  await pool.query(
+    'UPDATE orders SET status = $1 WHERE id = $2',
+    [req.body.status, req.params.id]
+  );
+  res.redirect('/orders');
+});
+
+// Delete order
+app.post('/orders/:id/delete', async (req, res) => {
+  await pool.query('DELETE FROM orderitem WHERE order_id = $1', [req.params.id]);
+  await pool.query('DELETE FROM orders WHERE id = $1', [req.params.id]);
+  res.redirect('/orders');
+});
+
+// View orders by customer
+app.get('/customers/:id/orders', async (req, res) => {
+  const result = await pool.query(
+    `SELECT o.*, r.name as restaurant_name
+    FROM orders o
+    JOIN restaurant r ON o.restaurant_id = r.id
+    WHERE o.customer_id = $1
+    ORDER BY o.id DESC`
+  , [req.params.id]);
+  res.render('orders', { orders: result.rows });
 });
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

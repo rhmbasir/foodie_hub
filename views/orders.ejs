@@ -1,14 +1,37 @@
 <%- include('partials/header') %>
-<h2>All Orders</h2>
+<h1>All Orders</h1>
 <table>
-  <tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Status</th></tr>
-  <% orders.forEach(o => { %>
+  <thead>
     <tr>
-      <td><%= o.order_id %></td>
-      <!-- <td><%= o.customer_name %></td>
-      <td><%= o.restaurant_name %></td> -->
-      <td><%= o.status %></td>
+      <th>ID</th>
+      <th>Customer</th>
+      <th>Restaurant</th>
+      <th>Status</th>
+      <th>Actions</th>
     </tr>
-  <% }) %>
+  </thead>
+  <tbody>
+    <% orders.forEach(order => { %>
+      <tr>
+        <td><%= order.id %></td>
+        <td><%= order.customer_name %></td>
+        <td><%= order.restaurant_name %></td>
+        <td><%= order.status %></td>
+        <td>
+          <form action="/orders/<%= order.id %>/status" method="POST" style="display:inline;">
+            <select name="status">
+              <option <%= order.status === 'pending' ? 'selected' : '' %>>pending</option>
+              <option <%= order.status === 'completed' ? 'selected' : '' %>>completed</option>
+              <option <%= order.status === 'canceled' ? 'selected' : '' %>>canceled</option>
+            </select>
+            <button type="submit">Update</button>
+          </form>
+          <form action="/orders/<%= order.id %>/delete" method="POST" style="display:inline;">
+            <button type="submit" onclick="return confirm('Cancel this order?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
 </table>
 <%- include('partials/footer') %>

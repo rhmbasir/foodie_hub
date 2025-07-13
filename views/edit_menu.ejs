@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Edit Menu Item</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
+
+<%- include('partials/header') %>
+
+
   <h1>Edit Menu Item</h1>
   <form method="POST" action="/menu/<%= menuItem.id %>">
     <input type="text" name="name" value="<%= menuItem.name %>" required><br>
@@ -16,5 +13,4 @@
     <button type="submit">Update Item</button>
   </form>
   <p><a href="/restaurants/<%= menuItem.restaurant_id %>/menu">Back to Menu</a></p>
-</body>
-</html>
+<%- include('partials/footer') %>

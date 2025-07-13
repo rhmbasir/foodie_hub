@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+<h1>Place New Order</h1>
+<form action="/orders" method="POST">
+  <label>Customer:</label>
+  <select name="customer_id" required>
+    <% customers.forEach(c => { %>
+      <option value="<%= c.id %>"><%= c.name %></option>
+    <% }) %>
+  </select><br>
+
+  <label>Restaurant:</label>
+  <select name="restaurant_id" required>
+    <% restaurants.forEach(r => { %>
+      <option value="<%= r.id %>"><%= r.name %></option>
+    <% }) %>
+  </select><br>
+
+  <h3>Menu Items & Quantities</h3>
+  <% menuItems.forEach(item => { %>
+    <div>
+      <input type="checkbox" name="menu_ids" value="<%= item.id %>">
+      <%= item.name %> ($<%= item.price %>)
+      <input type="number" name="quantity_<%= item.id %>" min="1" value="1">
+    </div>
+  <% }) %>
+
+  <button type="submit">Place Order</button>
+</form>
+<%- include('partials/footer') %>
