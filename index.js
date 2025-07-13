@@ -39,61 +39,67 @@ pool.query('select NOW()',(err,res)=>{
 
 // View + search restaurants
 
-app.get('/restaurants', async (req, res) => {
+app.get('/restaurants', (req, res) => {
   const search = req.query.search || '';
-  try {
-    let result;
-    if (search) {
-      result = await pool.query(
-        "SELECT * FROM restaurant WHERE name ILIKE $1 OR address ILIKE $1", [`%${search}%`]);
-    } else {
-      result = await pool.query("SELECT * FROM restaurant ORDER BY id");
-    }
-    res.render('restaurants', { restaurants: result.rows, search });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+  let query, values;
+
+  if (search) {
+    query = "SELECT * FROM restaurant WHERE name ILIKE 1 OR address ILIKE1";
+    values = [`%${search}%`];
+  } else {
+    query = "SELECT * FROM restaurant ORDER BY id";
+    values = [];
   }
+
+  pool.query(query, values)
+    .then(result => {
+      res.render('restaurants', { restaurants: result.rows, search });
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).send('Server error');
+    });
 });
+
 // Add restaurant
-app.post('/restaurants', async (req, res) => {
+app.post('/restaurants',  (req, res) => {
   const { name, address, phone } = req.body;
-  try {
-    await pool.query(
+ 
+     pool.query(
       'INSERT INTO restaurant (name, address, phone) VALUES ($1, $2, $3)',
       [name, address, phone]
-    );
-    res.redirect(`/restaurants/${req.params.id}/menu`);
-  } catch (err) {
+    ).then(() => {
+    res.redirect(`/restaurants`);
+  })
+  .catch(err => {
     res.send('Error ' + err.message);
-  }
+  });
 });
 
 // Edit form
-app.get('/restaurants/:id/edit', async (req, res) => {
-  try {
-    const result = await pool.query(
-      'SELECT * FROM restaurant WHERE id = $1',
-      [req.params.id]
-    );
+app.get('/restaurants/:id/edit', (req, res) => {
+  pool.query('SELECT * FROM restaurant WHERE id = $1',  [req.params.id] )
+  .then(result => {
     res.render('edit_restaurant', { restaurant: result.rows[0] });
-  } catch (err) {
+  })
+  .catch(err => {
     res.send('Error ' + err.message);
-  }
+  });
 });
 
+
 // Update restaurant
-app.post('/restaurants/:id', async (req, res) => {
+app.post('/restaurants/:id',  (req, res) => {
   const { name, address, phone } = req.body;
-  try {
-    await pool.query(
+  pool.query(
       'UPDATE restaurant SET name = $1, address = $2, phone = $3 WHERE id = $4',
-      [name, address, phone, req.params.id]
-    );
-    res.redirect('/restaurants');
-  } catch (err) {
-    res.send('Error ' + err.message);
-  }
+      [name, address, phone, req.params.id])
+    .then(result => {
+    res.redirect('/restaurants')
+ }).catch(err=>{
+ res.send('Error ' + err.message);
+ });
+  
 });
 
 // Delete restaurant
@@ -106,29 +112,10 @@ app.post('/restaurants/:id/delete', async (req, res) => {
   }
 });
 // List menu items for a restaurant
-// app.get('/restaurants/:id/menu', async (req, res) => {
-//   try {
-//     const restaurantResult = await pool.query(
-//       "SELECT * FROM restaurant WHERE id = $1",
-//       [req.params.id]
-//     );
-//     const menuResult = await pool.query(
-//       "SELECT * FROM menu WHERE restaurant_id = $1 ORDER BY id",
-//       [req.params.id]
-//     );
-//     res.render('menu', {
-//       restaurant: restaurantResult.rows[0],
-//       menuItems: menuResult.rows
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Server error');
-//   }
-// });
-// List menu items for a restaurant
-app.get('/restaurants/:id/menu', async (req, res) => {
+
+app.get('/restaurants/:id/menu',  (req, res) => {
   try {
-    const restaurantResult = await pool.query(
+    const restaurantResult =  pool.query(
       "SELECT * FROM restaurant WHERE id = $1",
       [req.params.id]
     );
@@ -160,20 +147,24 @@ app.get('/restaurants/:id/menu/new', (req, res) => {
   res.render('add_menu', { restaurantId: req.params.id });
 });
 
-// Handle add menu item
-app.post('/restaurants/:id/menu', async (req, res) => {
+//  add menu item
+app.post('/restaurants/:id/menu', (req, res) => {
   const { name, price, avalability } = req.body;
-  try {
-    await pool.query(
-      "INSERT INTO menu (restaurant_id, name, price, avalability) VALUES ($1, $2, $3, $4)",
-      [req.params.id, name, price, avalability === 'on']
-    );
+  const isAvailable = avalability === 'on';
+
+  pool.query(
+    "INSERT INTO menu (restaurant_id, name, price, avalability) VALUES (1,2, 3,4)",
+    [req.params.id, name, price, isAvailable]
+  )
+  .then(() => {
     res.redirect(`/restaurants/${req.params.id}/menu`);
-  } catch (err) {
+  })
+  .catch(err => {
     console.error(err);
     res.status(500).send('Server error');
-  }
+  });
 });
+
 
 // Form to edit menu item
 app.get('/menu/:menuId/edit', async (req, res) => {
